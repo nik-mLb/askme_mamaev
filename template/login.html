@@ -1,0 +1,35 @@
+{% extends 'layout/non_base.html' %}
+{% load static %}
+{% block authorization %}
+
+<div class="col-9 mt-5">
+    <form>
+        <div>
+            <label class="mb-3" style="color: red;">Error</label>
+        </div>
+        <div class="row mb-3">
+            <label class="col-sm-2 col-form-label">Login</label>
+            <div class="col-sm-5">
+                <input type="email" class="form-control">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label class="col-sm-2 col-form-label">Password</label>
+            <div class="col-sm-5">
+                <input type="password" class="form-control">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-sm--5 offset-sm-2">
+                <button class="btn btn-primary" type="button">Log in!</button>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-sm--5 offset-sm-2">
+                <a href="{% url 'signup' %}">create new account</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% endblock authorization %}

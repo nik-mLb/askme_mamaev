@@ -1,0 +1,40 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="d-flex gap-3 align-items-center">
+    <h1>New Questions</h1>
+</div>
+<div class="col-9 mt-4">
+    <form>
+        <div>
+            <label class="mb-3" style="color: red;">here</label>
+        </div>
+        <div class="row mb-3">
+            <label class="col-sm-1 col-form-label">Title</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label class="col-sm-1 col-form-label">Text</label>
+            <div class="col-sm-10">
+                <textarea class="form-control" id="exampleFormControlTextarea1" rows="5"></textarea>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label class="col-sm-1 col-form-label">Tags</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-sm-10 offset-sm-1">
+                <button class="btn btn-primary" type="button">Ask</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+{% endblock content %}

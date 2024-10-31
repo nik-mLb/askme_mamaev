@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bootstrap demo</title>
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+      <div class="d-flex w-100 justify-content-between align-items-center">
+        <a class="navbar-brand" href="{% url 'index' %}">AskPupkin</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span
+            class="navbar-toggler-icon"></span></button>
+
+        <form class="d-flex" role="search">
+          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
+          <button class="btn btn-outline-success" type="submit"><a class="text-reset text-decoration-none" href="{% url 'ask' %}">ASK!</a></button>
+        </form>
+        <div class="d-flex gap-1">
+          <img class="img-thumbnail" src="{% static 'img/avatarka.jpg' %}" alt="Avatar" style="width: 40px; height: 40px;" />
+          <div>
+            <div>Dr. Pepper</div>
+            <a href="#" class="me-2">Settings</a>
+            <a href="{% url 'login' %}">Log out</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container mt-3">
+
+    <div class="row">
+
+      {% block content %}
+
+      {% endblock %}
+      <div class="col-3">
+        <selection>
+          <h2>Popular Tags</h2>
+          <button type="button" class="btn btn-primary"><a class="text-reset text-decoration-none" href="{% url 'tag' %}">Tag</a></button>
+          <button type="button" class="btn btn-secondary"><a class="text-reset text-decoration-none" href="{% url 'tag' %}">Tag</a></button>
+          <button type="button" class="btn btn-success"><a class="text-reset text-decoration-none" href="{% url 'tag' %}">Tag</a></button>
+          <button type="button" class="btn btn-danger"><a class="text-reset text-decoration-none" href="{% url 'tag' %}">Tag</a></button>
+          <button type="button" class="btn btn-warning"><a class="text-reset text-decoration-none" href="{% url 'tag' %}">Tag</a></button>
+          <button type="button" class="btn btn-info"><a class="text-reset text-decoration-none" href="{% url 'tag' %}">Tag</a></button>
+          <button type="button" class="btn btn-light"><a class="text-reset text-decoration-none" href="{% url 'tag' %}">Tag</a></button>
+          <button type="button" class="btn btn-dark"><a class="text-reset text-decoration-none" href="{% url 'tag' %}">Tag</a></button>
+        </selection>
+        <selection>
+          <h2 class="mt-5">Best Members</h2>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <a href="#">Member</a>
+            </li>
+            <li class="list-group-item">
+              <a href="#">Member</a>
+            </li>
+            <li class="list-group-item">
+              <a href="#">Member</a>
+            </li>
+            <li class="list-group-item">
+              <a href="#">Member</a>
+            </li>
+            <li class="list-group-item">
+              <a href="#">Member</a>
+            </li>
+          </ul>
+        </selection>
+      </div>
+    </div>
+  </main>
+
+  <script src="{% static 'js/bootstrap.min.js' %}"></script>
+</body>
+
+</html>

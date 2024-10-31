@@ -1,0 +1,55 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+{% block content %}
+
+
+<div class="d-flex gap-3 align-items-center">
+    <h1>One Questions</h1>
+    <a href="{% url 'index' %}">New Questions</a>
+</div>
+
+<div class="col-9">
+
+    <div class="card-body">
+        <div class="row">
+            <div class="col-3">
+                <div class="border mb-2">
+                    <img class="img-fluid" src="{% static 'img/python.jpg' %}" alt="Avatar" />
+                </div>
+                <input class="form-control" type="number" value="5" placeholder="Default input"
+                    aria-label="default input example" />
+            </div>
+            <div class="col-9">
+                <h3 class="card-title">{{ question.title }}</h3>
+                <p class="card-text">{{ question.text }}</p>
+                <div class="d-flex gap-5">
+                    <div>
+                        Tags:
+                        <a href="{% url 'tag' %}" class="card-link">Tag</a>
+                        <a href="{% url 'tag' %}" class="card-link">Tag</a>
+                        <a href="{% url 'tag' %}" class="card-link">Tag</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <hr class="mt-5 my-4" style="border-top: 2px solid;">
+        <div class="d-flex flex-column gap-3 mt-3">
+            {% for answer in answers %}
+                {% include "layout/answer.html" %} 
+            {% endfor %}
+            {% include 'layout/pagination.html' %}
+        </div>
+        <hr class="mt-4 my-4" style="border-top: 2px solid;">
+    </div>
+    <div>
+        <div class="mb-3">
+            <label for="exampleFormControlTextarea1" class="form-label">Enter your answer:</label>
+            <textarea class="form-control" id="exampleFormControlTextarea1" rows="5"></textarea>
+        </div>
+        <button class="btn btn-primary" type="button">Answer</button>
+    </div>
+</div>
+
+{% endblock content %}

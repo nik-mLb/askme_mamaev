@@ -26,5 +26,6 @@ urlpatterns = [
     path('login/', views.login, name = 'login'),
     path('signup/', views.signup, name = 'signup'),
     path('ask/', views.ask, name = 'ask'),
-    path('tag/tag', views.tag, name = 'tag')
+    path('tag/<str:tag_name>', views.tag, name = 'tag'),
+    path('settings/', views.settings, name = 'settings')
 ]

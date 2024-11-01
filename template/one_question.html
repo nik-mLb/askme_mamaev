@@ -4,8 +4,8 @@
 
 
 <div class="d-flex gap-3 align-items-center">
-    <h1>One Questions</h1>
-    <a href="{% url 'index' %}">New Questions</a>
+    <h1>Questions</h1>
+    <a href="{% url 'index' %}" class="text-decoration-none text-primary">New Questions</a>
 </div>
 
 <div class="col-9">
@@ -13,21 +13,21 @@
     <div class="card-body">
         <div class="row">
             <div class="col-3">
-                <div class="border mb-2">
-                    <img class="img-fluid" src="{% static 'img/python.jpg' %}" alt="Avatar" />
+                <div class="border rounded mb-3 shadow-sm p-1">
+                    <img class="img-fluid rounded" src="{% static 'img/python.jpg' %}" alt="Avatar" />
                 </div>
-                <input class="form-control" type="number" value="5" placeholder="Default input"
+                <input class="form-control form-control-sm" type="number" value="5" placeholder="Default input"
                     aria-label="default input example" />
             </div>
             <div class="col-9">
                 <h3 class="card-title">{{ question.title }}</h3>
-                <p class="card-text">{{ question.text }}</p>
+                <p class="card-text card-text text-muted">{{ question.text }}</p>
                 <div class="d-flex gap-5">
-                    <div>
-                        Tags:
-                        <a href="{% url 'tag' %}" class="card-link">Tag</a>
-                        <a href="{% url 'tag' %}" class="card-link">Tag</a>
-                        <a href="{% url 'tag' %}" class="card-link">Tag</a>
+                    <div class = "d-flex flex-wrap align-items-center gap-2">
+                        <span class="fw-bold">Tags:</span>
+                        {% for tag in question.tags %}
+                        <a href="{% url 'tag' tag %}" class="btn btn-outline-primary btn-sm">{{ tag }}</a>
+                        {% endfor %}
                     </div>
                 </div>
             </div>

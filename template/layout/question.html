@@ -4,22 +4,25 @@
     <div class="card-body">
         <div class="row">
             <div class="col-3">
-                <div class="border mb-2" >
-                    <img class="img-fluid" src="{% static 'img/python.jpg' %}" alt="Avatar" />
+                <div class="border rounded mb-3 shadow-sm p-1">
+                    <img class="img-fluid rounded" src="{% static 'img/python.jpg' %}" alt="Avatar" />
                 </div>
-                <input class="form-control" type="number" value="5" placeholder="Default input"
+                <input class="form-control form-control-sm" type="number" value="5" placeholder="Default input"
                     aria-label="default input example" />
             </div>
             <div class="col-9">
-                <h5 class="card-title"><a href="{% url 'one_question' question.id %}">{{ question.title }}</a></h5>
-                <p class="card-text">{{ question.text }}</p>
-                <div class="d-flex gap-5">
-                    <a href="#" class="card-link">Answer (3)</a>
-                    <div>
-                        Tags:
-                        <a href="{% url 'tag' %}" class="card-link">Tag</a>
-                        <a href="{% url 'tag' %}" class="card-link">Tag</a>
-                        <a href="{% url 'tag' %}" class="card-link">Tag</a>
+                <h5 class="card-title mb-3">
+                    <a href="{% url 'one_question' question.id %}" class="text-decoration-none text-primary">{{ question.title }}</a>
+                </h5>
+                <p class="card-text text-muted">{{ question.text }}</p>
+
+                <div class="d-flex align-items-center gap-3 mt-3">
+                    <a href="#" class="card-link text-decoration-none text-primary">Answer (3)</a>
+                    <div class = "d-flex flex-wrap align-items-center gap-2">
+                        <span class="fw-bold">Tags:</span>
+                        {% for tag in question.tags %}
+                        <a href="{% url 'tag' tag %}" class="btn btn-outline-primary btn-sm">{{ tag }}</a>
+                        {% endfor %}
                     </div>
                 </div>
             </div>

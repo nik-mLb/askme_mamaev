@@ -7,11 +7,11 @@
                 <div class="border mb-2">
                     <img class="img-fluid rounded" src="{% static 'img/luntik.jpg' %}" alt="Avatar">
                 </div>
-                <input class="form-control" type="number" value="5" placeholder="Default input"
+                <input class="form-control" type="number" value="{{ answer.like_count }}" placeholder="Default input"
                     aria-label="default input example">
             </div>
             <div class="col-9">
-                <p class="card-text">{{ answer }}</p>
+                <p class="card-text">{{ answer.body }}</p>
                 <div class="d-flex gap-5">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" value="">

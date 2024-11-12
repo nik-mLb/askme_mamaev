@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="height: 100%; display: flex; flex-direction: column;">
 
 <head>
     <meta charset="utf-8" />
@@ -9,8 +9,8 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
 </head>
 
-<body>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+<body style="height: 100%; display: flex; flex-direction: column;">
+    <nav class="navbar navbar-expand-lg" style="background-color: #d3d3d3; flex: 0 1 auto" >
         <div class="container-fluid">
             <div class="d-flex w-100 justify-content-between align-items-center">
                 <a class="navbar-brand" href="{% url 'index' %}">AskPupkin</a>
@@ -32,7 +32,7 @@
         </div>
     </nav>
 
-    <main class="container mt-3">
+    <main class="container mt-3" style="flex: 1 1 auto">
 
         <div class="row">
 
@@ -41,36 +41,31 @@
             {% endblock %}
             <div class="col-3">
                 <selection>
-                    {% for tag in tags %}
+                    <h2 class="border-bottom pb-2">Popular Tags</h2>
+                    {% for tag in popular_tags %}
                     <button type="button" class="btn btn-primary mt-2 ">
-                        <a class="text-reset text-decoration-none" href="{% url 'tag' tag %}">{{tag}}</a>
+                        <a class="text-reset text-decoration-none" href="{% url 'tag' tag %}">{{ tag.name }}</a>
                     </button>
                     {% endfor %}
                 </selection>
                 <selection>
                     <h2 class="mt-5">Best Members</h2>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <a href="#">Member</a>
-                        </li>
-                        <li class="list-group-item">
-                            <a href="#">Member</a>
-                        </li>
-                        <li class="list-group-item">
-                            <a href="#">Member</a>
-                        </li>
-                        <li class="list-group-item">
-                            <a href="#">Member</a>
-                        </li>
-                        <li class="list-group-item">
-                            <a href="#">Member</a>
-                        </li>
+                        {% for member in members %}
+                            <li class="list-group-item">
+                                <a class="text-decoration-none" href="#">{{ member.user.username }}</a>
+                            </li>
+                        {% endfor %}
                     </ul>
                 </selection>
             </div>
         </div>
     </main>
-
+    <footer class="bg-light text-center text-lg-start mt-3" style="flex: 0 1 auto">
+        <div class="text-center p-3" style="background-color: #d3d3d3;">
+            © 2024 AskPupkin.
+        </div>
+    </footer>
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
 </body>
 

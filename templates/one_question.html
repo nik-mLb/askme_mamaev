@@ -16,16 +16,16 @@
                 <div class="border rounded mb-3 shadow-sm p-1">
                     <img class="img-fluid rounded" src="{% static 'img/python.jpg' %}" alt="Avatar" />
                 </div>
-                <input class="form-control form-control-sm" type="number" value="5" placeholder="Default input"
+                <input class="form-control form-control-sm" type="number" value="{{ question.like_count }}" placeholder="Default input"
                     aria-label="default input example" />
             </div>
             <div class="col-9">
                 <h3 class="card-title">{{ question.title }}</h3>
-                <p class="card-text card-text text-muted">{{ question.text }}</p>
+                <p class="card-text card-text text-muted">{{ question.body }}</p>
                 <div class="d-flex gap-5">
                     <div class = "d-flex flex-wrap align-items-center gap-2">
                         <span class="fw-bold">Tags:</span>
-                        {% for tag in question.tags %}
+                        {% for tag in question.tags.all %}
                         <a href="{% url 'tag' tag %}" class="btn btn-outline-primary btn-sm">{{ tag }}</a>
                         {% endfor %}
                     </div>

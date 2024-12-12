@@ -4,7 +4,7 @@
 
 
 <div class="d-flex gap-3 align-items-center">
-    <h1>Questions</h1>
+    <h1>Question</h1>
     <a href="{% url 'index' %}" class="text-decoration-none text-primary">New Questions</a>
 </div>
 
@@ -14,9 +14,14 @@
         <div class="row">
             <div class="col-3">
                 <div class="border rounded mb-3 shadow-sm p-1">
-                    <img class="img-fluid rounded" src="{% static 'img/python.jpg' %}" alt="Avatar" />
+                    {% if question.author.avatar %}
+                        <img class="img-fluid rounded" src="{{ question.author.avatar.url }}" alt="Avatar" />
+                    {% else %}
+                        <img class="img-fluid rounded" src="{% static 'img/base_avatar.jpg' %}" alt="Default Avatar" />
+                    {% endif %}
                 </div>
-                <input class="form-control form-control-sm" type="number" value="{{ question.like_count }}" placeholder="Default input"
+                <input min = "{{ question.like_count }}" max="{{ question.like_count | add:+1 }}"
+                    class="form-control form-control-sm" type="number" value="{{ question.like_count }}" placeholder="Default input"
                     aria-label="default input example" />
             </div>
             <div class="col-9">
@@ -43,13 +48,26 @@
         </div>
         <hr class="mt-4 my-4" style="border-top: 2px solid;">
     </div>
-    <div>
-        <div class="mb-3">
-            <label for="exampleFormControlTextarea1" class="form-label">Enter your answer:</label>
-            <textarea class="form-control" id="exampleFormControlTextarea1" rows="5"></textarea>
-        </div>
-        <button class="btn btn-primary mb-4" type="button">Answer</button>
-    </div>
+    {% if request.user.is_authenticated %}
+        <form action="{% url 'one_question' question.id %}" method="POST">
+            {% csrf_token %}
+            <div>
+                <div class="mb-3">
+                    <label for="exampleFormControlTextarea1" class="form-label">Enter your answer:</label>
+                    <textarea class="form-control" id="{{ form.body.id_for_label }}" name="{{ form.body.name }}" 
+                        rows="5" style="max-height: 200px; overflow-y: auto;">{{ form.body.value|default_if_none:'' }}</textarea>
+                    {% if form.body.errors %}
+                        <div class="alert alert-danger mt-2" style="padding: 0.25rem 0.5rem;">
+                            {% for error in form.body.errors %}
+                                <p class="mb-0">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <button class="btn btn-primary mb-4" type="submit">Answer</button>
+            </div>
+        </form>
+    {% endif %}
 </div>
 
 {% endblock content %}

@@ -5,7 +5,11 @@
         <div class="row">
             <div class="col-3">
                 <div class="border rounded mb-3 shadow-sm p-1">
-                    <img class="img-fluid rounded" src="{% static 'img/python.jpg' %}" alt="Avatar" />
+                    {% if question.author.avatar %}
+                        <img class="img-fluid rounded" src="{{ question.author.avatar.url }}" alt="Avatar" />
+                    {% else %}
+                        <img class="img-fluid rounded" src="{% static 'img/base_avatar.jpg' %}" alt="Default Avatar" />
+                    {% endif %}
                 </div>
                 <input min = "{{ question.like_count }}" max="{{ question.like_count | add:+1 }}" 
                     class="form-control form-control-sm" type="number" value="{{ question.like_count }}" 

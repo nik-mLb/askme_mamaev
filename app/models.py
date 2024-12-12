@@ -12,7 +12,7 @@ class ProfileManager(models.Manager):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    avatar = models.ImageField(upload_to="uploads/", null=True, blank=True)
+    avatar = models.ImageField(upload_to="avatar", null=True, blank=True)
 
     objects = ProfileManager()
     def __str__(self):
@@ -89,7 +89,7 @@ class AnswerLike(models.Model):
     user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="answer_likes")
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name="likes")
 
-    class Meta:
+    class Meta: 
         unique_together = ("user", "answer")
 
     def __str__(self):

@@ -5,10 +5,14 @@
         <div class="row">
             <div class="col-3">
                 <div class="border mb-2">
-                    <img class="img-fluid rounded" src="{% static 'img/luntik.jpg' %}" alt="Avatar">
+                    {% if answer.author.avatar %}
+                        <img class="img-fluid rounded" src="{{ answer.author.avatar.url }}" alt="Avatar" />
+                    {% else %}
+                        <img class="img-fluid rounded" src="{% static 'img/base_avatar.jpg' %}" alt="Default Avatar" />
+                    {% endif %}
                 </div>
-                <input class="form-control" type="number" value="{{ answer.like_count }}" placeholder="Default input"
-                    aria-label="default input example">
+                <input class="form-control" type="number" min="{{ answer.like_count }}" max="{{ answer.like_count | add:+1 }}" placeholder="0"
+                    aria-label="0">
             </div>
             <div class="col-9">
                 <p class="card-text">{{ answer.body }}</p>

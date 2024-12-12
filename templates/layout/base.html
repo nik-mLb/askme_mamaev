@@ -16,6 +16,7 @@
             <div class="d-flex w-100 justify-content-between align-items-center">
                 <a class="navbar-brand" href="{% url 'index' %}">AskPupkin</a>
 
+                {% if request.user.is_authenticated %}
                 <form class="d-flex" role="search">
                     <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
                     <button class="btn btn-outline-success" type="submit"><a class="text-reset text-decoration-none"
@@ -23,14 +24,32 @@
                 </form>
 
                 <div class="d-flex align-items-center gap-3">
-                    <img class="img-thumbnail rounded-circle" src="{% static 'img/avatarka.jpg' %}" alt="Avatar"
-                        style="width: 40px; height: 40px;" />
+                    {% if request.user.profile.avatar %}
+                        <img class="img-thumbnail rounded-circle" src="{{ request.user.profile.avatar.url }}" alt="Avatar"
+                            style="width: 40px; height: 40px;" />
+                    {% else %}
+                        <img class="img-thumbnail rounded-circle" src="{% static 'img/base_avatar.jpg' %}" alt="Avatar"
+                            style="width: 40px; height: 40px;" />
+                    {% endif %}
                     <div>
-                        <div>Dr. Pepper</div>
+                        <div>{{ request.user.username }}</div>
                         <a href="{% url 'settings' %}" class="me-2 text-decoration-none text-primary">Settings</a>
-                        <a href="{% url 'login' %}" class="text-decoration-none text-primary">Log out</a>
+                        <a href="{% url 'logout' %}?next={{ request.path }}" class="text-decoration-none text-primary">Log out</a>
                     </div>
                 </div>
+                {% else %}
+                <form class="d-flex" role="search">
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
+                    
+                </form>
+
+                <div class="d-flex gap-1">
+                    <div>
+                        <a href="{% url 'signup' %}" class="me-2 text-decoration-none text-primary"> Register</a>
+                        <a href="{% url 'login' %}" class = "text-decoration-none text-primary">Log in</a>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -42,7 +61,7 @@
             {% block content %}
 
             {% endblock %}
-            <div class="col-3">
+            <div class="col-3 ms-auto">
                 <section>
                     <h2 class="border-bottom pb-2">Popular Tags</h2>
                     {% for tag in popular_tags %}
@@ -71,5 +90,9 @@
     </footer>
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
 </body>
+
+<script>
+    console.log('hello')
+</script>
 
 </html>

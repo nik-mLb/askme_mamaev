@@ -1,55 +1,71 @@
 {% extends 'layout/non_base.html' %}
 {% load static %}
+{% load django_bootstrap5 %}
+
 {% block authorization %}
 
-
-<div class="col-9 mt-5">
-    <div>
-        <label class="mb-3" style="color: red;">Error</label>
-    </div>
-    <div class="row mb-3">
-        <label class="col-sm-2 col-form-label">Login</label>
-        <div class="col-sm-5">
-            <input type="text" class="form-control">
-        </div>
-    </div>
-    <div class="row mb-3">
-        <label class="col-sm-2 col-form-label">Email</label>
-        <div class="col-sm-5">
-            <input type="email" class="form-control">
-        </div>
-    </div>
-    <div class="row mb-3">
-        <label class="col-sm-2 col-form-label">NickName</label>
-        <div class="col-sm-5">
-            <input type="text" class="form-control">
-        </div>
-    </div>
-    <div class="row mb-3">
-        <label class="col-sm-2 col-form-label">Password</label>
-        <div class="col-sm-5">
-            <input type="password" class="form-control">
-        </div>
-    </div>
-    <div class="row mb-3">
-        <label class="col-sm-2 col-form-label">Repeat password</label>
-        <div class="col-sm-5">
-            <input type="password" class="form-control">
-        </div>
-    </div>
-    <div class="row mb-3">
-        <label class="col-sm-2 col-form-label">Upload avatar</label>
-        <div class="col-sm-5">
-            <div class="input-group mb-3">
-                <input type="file" class="form-control" id="inputGroupFile02">
+<div class="col-5 mt-5">
+    <form action="{% url 'signup' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="col-sm--5 offset-sm-2">
+            <div class="mb-3">
+                <label for="id_username" class="form-label">Username:</label>
+                <input type="text" name="username" id="id_username" class="form-control"
+                    value="{{ form.username.value|default_if_none:'' }}" maxlength="30" placeholder="Username">
+                {% if form.username.errors %}
+                    <div class="alert alert-danger mt-2" style="padding: 0.25rem 0.5rem;">
+                        {% for error in form.username.errors %}
+                            <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                <label for="id_email" class="form-label">Email:</label>
+                <input type="email" name="email" id="id_email" class="form-control"
+                    value="{{ form.email.value|default_if_none:'' }}" placeholder="Email">
+                {% if form.email.errors %}
+                    <div class="alert alert-danger mt-2" style="padding: 0.25rem 0.5rem;">
+                        {% for error in form.email.errors %}
+                            <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                <label for="id_password" class="form-label">Password:</label>
+                <input type="password" name="password" id="id_password" class="form-control" placeholder="Password"
+                    value="{{ form.password.value|default_if_none:'' }}">
+                {% if form.password.errors %}
+                    <div class="alert alert-danger mt-2" style="padding: 0.25rem 0.5rem;">
+                        {% for error in form.password.errors %}
+                            <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                <label for="id_password_confirmation" class="form-label">Confirm Password:</label>
+                <input type="password" name="password_confirmation" id="id_password_confirmation" 
+                    class="form-control" placeholder="Confirm Password" value="{{ form.password_confirmation.value|default_if_none:'' }}">
+                {% if form.password_confirmation.errors %}
+                    <div class="alert alert-danger mt-2" style="padding: 0.25rem 0.5rem;">
+                        {% for error in form.password_confirmation.errors %}
+                            <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                <label for="id_avatar" class="form-label">Upload New Avatar</label>
+                <input type="file" name="avatar" id="id_avatar" class="form-control">
             </div>
         </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col-sm--5 offset-sm-2">
-            <button class="btn btn-primary" type="button">Register!</button>
+        <div class="row mb-3">
+            <div class="col-sm-5 offset-sm-2">
+                <button class="btn btn-primary" type="submit">Register!</button>
+            </div>
         </div>
-    </div>
     </form>
 </div>
 

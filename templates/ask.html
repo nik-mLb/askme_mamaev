@@ -6,35 +6,54 @@
     <h1>New Questions</h1>
 </div>
 <div class="col-9 mt-4">
-    <form>
-        <div>
-            <label class="mb-3" style="color: red;">here</label>
-        </div>
+    <form action="{% url 'ask' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
         <div class="row mb-3">
             <label class="col-sm-1 col-form-label">Title</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control">
+                <input type="text" class="form-control" name="{{ form.title.name }}" id="{{ form.title.id_for_label }}" value="{{ form.title.value|default_if_none:'' }}">
+                {% if form.title.errors %}
+                    <div class="alert alert-danger mt-2" style="padding: 0.25rem 0.5rem;">
+                        {% for error in form.title.errors %}
+                            <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
         </div>
         <div class="row mb-3">
             <label class="col-sm-1 col-form-label">Text</label>
             <div class="col-sm-10">
-                <textarea class="form-control" id="exampleFormControlTextarea1" rows="5"></textarea>
+                <textarea class="form-control" id="{{ form.body.id_for_label }}" name="{{ form.body.name }}" 
+                    rows="5" style="max-height: 200px; overflow-y: auto;">{{ form.body.value|default_if_none:'' }}</textarea>
+                {% if form.body.errors %}
+                    <div class="alert alert-danger mt-2" style="padding: 0.25rem 0.5rem;">
+                        {% for error in form.body.errors %}
+                            <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
         </div>
         <div class="row mb-3">
             <label class="col-sm-1 col-form-label">Tags</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control">
+                <input type="text" placeholder="Enter separated by spaces" class="form-control" name="{{ form.tags.name }}" id="{{ form.tags.id_for_label }}" value="{{ form.tags.value|default_if_none:'' }}">
+                {% if form.tags.errors %}
+                    <div class="alert alert-danger mt-2" style="padding: 0.25rem 0.5rem;">
+                        {% for error in form.tags.errors %}
+                            <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-sm-10 offset-sm-1">
-                <button class="btn btn-primary" type="button">Ask</button>
+                <button class="btn btn-primary" type="submit">Ask</button>
             </div>
         </div>
     </form>
 </div>
-
 
 {% endblock content %}

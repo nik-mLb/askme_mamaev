@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, Case, When, IntegerField
 from django.contrib.auth.models import User
 from django.urls import reverse
 
@@ -7,7 +7,7 @@ class ProfileManager(models.Manager):
     def get_popular_users(self):
         return self.annotate(
             question_count=Count('author_question'),
-            answer_count=Count('author_answer')
+            answer_count=Count('author_answer') 
         ).order_by('-question_count', '-answer_count')[:5]
 
 class Profile(models.Model):
@@ -32,12 +32,17 @@ class Tag(models.Model):
 
 class QuestionManager(models.Manager):
     def best_questions(self):
-        return self.annotate(like_count=models.Count("likes_question")).order_by("-like_count")
+        return self.order_by("-like_count")
 
     def new_questions(self):
         return self.order_by("-created_at")
     
-
+    def sorted_answers(self, question_id):
+        answers = self.get(id=question_id).answers.all()
+        return sorted(
+            answers,
+            key=lambda a: (not a.is_correct, -a.like_count)
+        )
 
 class Question(models.Model):
     title = models.CharField(max_length=255)
@@ -45,15 +50,29 @@ class Question(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     body = models.TextField()
     tags = models.ManyToManyField(Tag, related_name="tags_question")
+    like_count = models.IntegerField(default=0)
 
     def get_absolute_url(self):
         return reverse("one_question", args=[str(self.id)])
     
-    def like_count(self):
-        return self.likes_question.count()
-    
+    @property
     def answer_count(self):
         return self.answers.count()
+    
+    def update_like_count(self):
+        """Обновляет количество лайков для текущего вопроса."""
+        self.like_count = self.likes_question.count()
+        self.save()
+
+    @classmethod
+    def bulk_update_like_counts(cls):
+        """Обновляет количество лайков для всех вопросов в базе."""
+        from django.db.models import Count
+
+        questions = cls.objects.annotate(new_like_count=Count("likes_question"))
+        for question in questions:
+            cls.objects.filter(id=question.id).update(like_count=question.new_like_count)
+
 
     objects = QuestionManager()
 
@@ -66,7 +85,9 @@ class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="answers")
     body = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    is_correct = models.BooleanField(default=False)  
 
+    @property
     def like_count(self):
         return self.likes.count()
 
@@ -83,6 +104,10 @@ class QuestionLike(models.Model):
 
     def __str__(self):
         return f"{self.user.user.username} likes {self.question.title}"
+    
+    @classmethod
+    def has_user_liked(cls, profile, question):
+        return cls.objects.filter(user=profile, question=question).exists()
 
 
 class AnswerLike(models.Model):
@@ -94,3 +119,7 @@ class AnswerLike(models.Model):
 
     def __str__(self):
         return f"{self.user.user.username} likes answer to {self.answer.question.title}"
+    
+    @classmethod
+    def has_user_liked(cls, profile, answer):
+        return cls.objects.filter(user=profile, answer=answer).exists()

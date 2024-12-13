@@ -1,12 +1,15 @@
-from django.http import HttpResponse
+import json
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Question, Tag, Answer, QuestionLike, Profile
 from .utils import (paginate, get_default_context, get_question_context, get_ask_context, 
-    get_tag_context, get_login_context, get_signup_context, get_settings_context)
+    get_tag_context, get_login_context, get_signup_context, get_settings_context, get_like_question_context,
+    get_like_question_context_async, get_like_answer_context_async, get_correct_answer_context )
 from .forms import AnswerForm
 from django.contrib import auth
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 
 def index(request):
     page = paginate(Question.objects.new_questions(), request)
@@ -66,3 +69,23 @@ def logout(request):
     next_page = request.GET.get('next', reverse('login'))
     auth.logout(request)
     return redirect(next_page)
+
+@login_required
+def like_question(request, question_id):
+    url = get_like_question_context(request, question_id)
+    return redirect(url)
+
+@require_POST
+@login_required
+def like_question_async(request, question_id):
+    return get_like_question_context_async(request, question_id)
+
+@require_POST
+@login_required
+def like_answer_async(request, question_id, answer_id):
+    return get_like_answer_context_async(request, question_id, answer_id)
+
+@require_POST
+@login_required
+def set_correct_answer(request, question_id, answer_id):
+    return get_correct_answer_context(request, question_id, answer_id)

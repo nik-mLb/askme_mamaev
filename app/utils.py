@@ -1,6 +1,8 @@
+import json
 from django.db.models import Count
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Question, Tag, Profile
+from django.http import JsonResponse
+from .models import Question, Tag, Profile, QuestionLike, Answer, AnswerLike
 from .forms import LoginForm, RegisterForm, SettinsForm, AskForm, AnswerForm
 from django.contrib import auth
 from django.urls import reverse
@@ -35,7 +37,22 @@ def get_default_context(page):
 
 def get_question_context(request, question_id):
     question_obj = get_object_or_404(Question, id=question_id)
-    page = paginate(question_obj.answers.all(), request)
+    has_liked = False
+    sorted_answers = Question.objects.sorted_answers(question_id)
+    answer_likes = []
+
+    if request.user.is_authenticated:
+        has_liked = QuestionLike.has_user_liked(request.user.profile, question_obj)
+        for answer in sorted_answers:
+            answer_has_like = AnswerLike.has_user_liked(request.user.profile, answer)
+            answer_likes.append({
+                'answer' : answer,
+                'answer_has_like' : answer_has_like
+            })
+    else:
+        answer_likes = [{'answer': answer, 'answer_has_like': False} for answer in sorted_answers]
+
+    page = paginate(answer_likes, request)
     if request.method == 'POST':
         form = AnswerForm(request.POST)
         if form.is_valid():
@@ -43,14 +60,15 @@ def get_question_context(request, question_id):
             answer.question = question_obj
             answer.author = request.user.profile  # Предполагается, что у вас есть связь между User и Profile
             answer.save()
-            return f"{reverse('one_question', kwargs={'question_id': question_id})}#answer-{answer.id}"
+            return reverse('one_question', kwargs={'question_id': question_id})
     else:
         form = AnswerForm()
     context = get_base_context()
     context['form'] = form
     context['question'] = question_obj
-    context['answers'] = page.object_list
+    context['answers_likes'] = page.object_list
     context['page_obj'] = page
+    context['has_liked'] = has_liked
     return context
 
 def get_tag_context(tag_name, page):
@@ -73,7 +91,7 @@ def get_login_context(request):
                 continue_url = request.GET.get('continue', reverse('index'))
                 return continue_url
             else:
-                form.add_error('password', 'Неверное имя пользователя или пароль.')
+                form.add_error('password', 'Invalid username or password.')
     else:
         form = LoginForm()
     context = get_base_context()
@@ -119,3 +137,60 @@ def get_ask_context(request):
     context = get_base_context()
     context['form'] = form
     return context
+
+
+def get_like_question_context(request, question_id):
+    if request.method == 'POST':
+        profile = get_object_or_404(Profile, user=request.user)
+        question = get_object_or_404(Question, pk=question_id)
+        existing_like = QuestionLike.objects.filter(user=profile, question=question).first()
+
+        if existing_like:
+            existing_like.delete()
+        else:
+            QuestionLike.objects.create(user=profile, question=question)
+    return reverse('one_question', kwargs={'question_id': question_id})
+
+def get_like_question_context_async(request, question_id):
+    profile = get_object_or_404(Profile, user=request.user)
+    question = get_object_or_404(Question, pk=question_id)
+    existing_like = QuestionLike.objects.filter(user=profile, question=question).first()
+    liked = False
+    if existing_like:
+        existing_like.delete()
+    else:
+        QuestionLike.objects.create(user=profile, question=question)
+        liked = True
+
+    question.update_like_count()
+    return JsonResponse({
+        'likes_count' : question.like_count,
+        'liked': liked,
+    })
+
+def get_like_answer_context_async(request, question_id, answer_id):
+    profile = get_object_or_404(Profile, user=request.user)
+    question = get_object_or_404(Question, pk=question_id)
+    answer = get_object_or_404(Answer, pk=answer_id)
+    existing_like = AnswerLike.objects.filter(user=profile, answer=answer)
+    liked = False
+    if existing_like:
+        existing_like.delete()
+    else:
+        AnswerLike.objects.create(user=profile, answer=answer)
+        liked = True
+    
+    likes_count = answer.like_count
+    return JsonResponse({
+        'likes_count' : likes_count,
+        'liked': liked,
+    })
+
+def get_correct_answer_context(request, question_id, answer_id):
+    answer = get_object_or_404(Answer, pk=answer_id)
+    if answer.is_correct:
+        answer.is_correct = False
+    else:
+        answer.is_correct = True
+    answer.save()
+    return JsonResponse({'is_correct': answer.is_correct})

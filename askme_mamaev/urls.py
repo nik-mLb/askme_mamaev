@@ -37,5 +37,6 @@ urlpatterns = [
     path('set_correct_answer/<int:question_id>/<int:answer_id>', views.set_correct_answer, name='set_correct_answer')
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# if settings.DEBUG:
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+#     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) 

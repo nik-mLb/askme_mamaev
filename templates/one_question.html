@@ -8,7 +8,7 @@
     <a href="{% url 'index' %}" class="text-decoration-none text-primary">New Questions</a>
 </div>
 
-<div class="col-9">
+<div>
 
     <div class="question-body" data-question-id="{{ question.id }}">
         <div class="row">
@@ -23,10 +23,10 @@
                 <input class="form-control form-control like-counter" type="number" value="{{ question.like_count }}"
                     placeholder="Default input" aria-label="default input example" readonly />
                 {% if request.user.is_authenticated %}
-                    <div class="mt-3 d-flex justify-content-between">
-                        <button class="btn btn-primary like-button" type="submit" style="flex: 1; margin-right: 5px;"
-                            data-liked="{{ has_liked }}">.</button>
-                    </div>
+                <div class="mt-3 d-flex justify-content-between">
+                    <button class="btn btn-primary like-button" type="submit" style="flex: 1; margin-right: 5px;"
+                        data-liked="{{ has_liked }}">.</button>
+                </div>
                 {% endif %}
             </div>
             <div class="col-9">
@@ -45,13 +45,13 @@
     </div>
     <div>
         <hr class="mt-5 my-4" style="border-top: 2px solid;">
-        <div class="d-flex flex-column gap-3 mt-3">
+        <div class="d-flex flex-column gap-3 mt-3" id="answer-container">
             <h1>Answers</h1>
             {% for answer_like in answers_likes %}
-            {% include "layout/answer.html" %}
+            <div id="answer_{{ answer_like.answer.id }}" data-user-id="{{answer_like.user.id}}">{% include "layout/answer.html" %}</div>
             {% endfor %}
-            {% include 'layout/pagination.html' %}
         </div>
+        <div class="d-flex flex-column gap-3 mt-3">{% include 'layout/pagination.html' %}</div>
         <hr class="mt-4 my-4" style="border-top: 2px solid;">
     </div>
     {% if request.user.is_authenticated %}
@@ -62,7 +62,7 @@
                 <label for="{{form.body.id_for_label}}" class="form-label">Enter your answer:</label>
                 <textarea class="form-control" id="{{ form.body.id_for_label }}" name="{{ form.body.name }}" rows="5"
                     style="max-height: 200px; overflow-y: auto;"
-                    placeholder="Enter a answer" >{{ form.body.value|default_if_none:'' }}</textarea>
+                    placeholder="Enter a answer">{{ form.body.value|default_if_none:'' }}</textarea>
                 {% if form.body.errors %}
                 <div class="alert alert-danger mt-2" style="padding: 0.25rem 0.5rem;">
                     {% for error in form.body.errors %}
@@ -76,6 +76,53 @@
     </form>
     {% endif %}
 </div>
+
+<div id="counter">-</div>
+<script src="https://unpkg.com/centrifuge@5.0.1/dist/centrifuge.js"></script>
+<script type="text/javascript">
+    const container = document.getElementById('counter');
+
+    const centrifuge = new Centrifuge("{{ws_url}}", {
+        token: "{{token }}"
+    });
+
+    centrifuge.on('connecting', function (ctx) {
+        console.log(`connecting: ${ctx.code}, ${ctx.reason}`);
+    }).on('connected', function (ctx) {
+        console.log(`connected over ${ctx.transport}`);
+    }).on('disconnected', function (ctx) {
+        console.log(`disconnected: ${ctx.code}, ${ctx.reason}`);
+    }).connect();
+
+    const sub = centrifuge.newSubscription("{{question.id}}");
+
+    sub.on('publication', function (ctx) {
+        const answerContainer = document.getElementById("answer-container");
+
+        // Создаем новый элемент ответа
+        const messageAnswer = document.querySelector(".answer-body")
+        const newAnswer = messageAnswer.cloneNode(true)
+
+        newAnswer.querySelector('.content').innerHTML = ctx.data.answer
+        newAnswer.querySelector('.username').innerHTML = `Answer from ${ctx.data.username}:`
+        if (newAnswer.querySelector('.correct')){
+            newAnswer.querySelector('.correct').checked = ctx.data.correct
+        }
+        if (newAnswer.querySelector('.correct-tr')){
+            newAnswer.querySelector('.correct-tr').remove()
+        }
+        newAnswer.querySelector('.avatar').src = ctx.data.avatar;
+        
+        answerContainer.appendChild(newAnswer);
+
+    }).on('subscribing', function (ctx) {
+        console.log(`subscribing: ${ctx.code}, ${ctx.reason}`);
+    }).on('subscribed', function (ctx) {
+        console.log('subscribed', ctx);
+    }).on('unsubscribed', function (ctx) {
+        console.log(`unsubscribed: ${ctx.code}, ${ctx.reason}`);
+    }).subscribe();
+</script>
 
 <script src="{% static 'js/question_like.js' %}"></script>
 <script src="{% static 'js/answer_like.js' %}"></script>

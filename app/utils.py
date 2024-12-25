@@ -1,4 +1,5 @@
 import json
+from cent import Client, PublishRequest
 from django.db.models import Count
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse
@@ -7,6 +8,10 @@ from .forms import LoginForm, RegisterForm, SettinsForm, AskForm, AnswerForm
 from django.contrib import auth
 from django.urls import reverse
 from django.shortcuts import get_object_or_404
+from askme_mamaev.settings import CENTRIFUGO_API_KEY, CENTRIFUGO_API_URL, CENTRIFUGO_SECRET_KEY, CENTRIFUGO_WS_URL
+import jwt
+import time
+from django.core.cache import cache
 
 def paginate(objects_list, request, per_page=10):
     page_str = request.GET.get('page', '1')
@@ -21,25 +26,67 @@ def paginate(objects_list, request, per_page=10):
         page = paginator.page(1)
     return page
 
-def get_base_context():
+def get_cache_cont():
+    popular_tags = cache.get('popular_tags')
+    members = cache.get('members')
+    if not popular_tags:
+        popular_tags = Tag.objects.get_popular()
+        cache.set('popular_tags', popular_tags, 3600)  # Кэшируем на 1 час
+
+    if not members:
+        members = Profile.objects.get_popular_users()
+        cache.set('members', members, 3600)  # Кэшируем на 1 час
+    return popular_tags, members
+
+def get_non_base_context(request):
+    popular_tags, members = get_cache_cont()
+    secret = CENTRIFUGO_SECRET_KEY
+    ws_url = CENTRIFUGO_WS_URL
+    if request.user.is_authenticated:
+        claims = {"sub": str(request.user.profile.id), "exp": int(time.time()) + 5*60}
+    else:
+        claims = {"exp": int(time.time()) + 5*60}
+    token = jwt.encode(claims, secret, "HS256")
     return{
-        'popular_tags' : Tag.objects.get_popular(), 
-        #'members' : Profile.objects.get_popular_users()
+        'popular_tags' : popular_tags, 
+        'members' : members,
+        'token': token,
+        'ws_url': ws_url,
     }
 
-def get_default_context(page):
+def get_base_context(request):
+    popular_tags, members = get_cache_cont()
+    secret = CENTRIFUGO_SECRET_KEY
+    ws_url = CENTRIFUGO_WS_URL
+    if request.user.is_authenticated:
+        claims = {"sub": str(request.user.profile.id), "exp": int(time.time()) + 5*60}
+    else:
+        claims = {"exp": int(time.time()) + 5*60}
+    token = jwt.encode(claims, secret, "HS256")
     return{
-        'questions': page.object_list, 
-        'page_obj' : page,
-        'popular_tags' : Tag.objects.get_popular(), 
-        #'members' : Profile.objects.get_popular_users()
+        'popular_tags' : popular_tags, 
+        'members' : members,
+        'token': token,
+        'ws_url': ws_url,
     }
+
+def get_default_context(request, page):
+    context = get_base_context(request)
+    context['questions'] = page.object_list
+    context['page_obj'] = page
+    return context
+
+def get_tag_context(request, tag_name, page):
+    context = get_default_context(request, page)
+    context['tag_name'] = tag_name
+    return context
 
 def get_question_context(request, question_id):
     question_obj = get_object_or_404(Question, id=question_id)
     has_liked = False
     sorted_answers = Question.objects.sorted_answers(question_id)
     answer_likes = []
+    context = get_base_context(request)
 
     if request.user.is_authenticated:
         has_liked = QuestionLike.has_user_liked(request.user.profile, question_obj)
@@ -57,29 +104,44 @@ def get_question_context(request, question_id):
         form = AnswerForm(request.POST)
         if form.is_valid():
             answer = form.save(commit=False)
+            context['new_answer_id'] = answer.id
             answer.question = question_obj
             answer.author = request.user.profile  # Предполагается, что у вас есть связь между User и Profile
             answer.save()
-            return reverse('one_question', kwargs={'question_id': question_id})
+            answer_likes.append({
+                'answer' : answer,
+                'answer_has_like' : False
+            })
+            page = paginate(answer_likes, request)
+            client = Client(CENTRIFUGO_API_URL, CENTRIFUGO_API_KEY)
+            paginator = page.paginator
+            new_answer_page = paginator.num_pages
+            redirect_url = reverse('one_question', args=[question_id]) + f"?page={new_answer_page}#answer_{answer.id}"
+            data = {
+                "answer": answer.body,
+                "user_id": answer.author.id,
+                "username": answer.author.user.username,
+                "current": False  # Добавлено поле current
+            }
+            if answer.author.avatar:
+                data["avatar"] = answer.author.avatar.url
+            else:
+                data["avatar"] =  "/static/img/base_avatar.jpg" 
+            publish_request = PublishRequest(channel=str(question_id), data = data)
+            try:
+                result = client.publish(publish_request)
+                print("Centrifugo publish result:", result)  # Логирование
+            except Exception as e:
+                print("Centrifugo publish error:", e)  # Логирование ошибок
+            return redirect_url
     else:
         form = AnswerForm()
-    context = get_base_context()
     context['form'] = form
     context['question'] = question_obj
     context['answers_likes'] = page.object_list
     context['page_obj'] = page
     context['has_liked'] = has_liked
     return context
-
-def get_tag_context(tag_name, page):
-    return{
-        'tag_name':tag_name,
-        'questions': page.object_list,
-        'page_obj' : page, 
-        'popular_tags' : Tag.objects.get_popular(),
-        #'members' : Profile.objects.get_popular_users()
-    }
-
 
 def get_login_context(request):
     if request.method == 'POST':
@@ -94,7 +156,7 @@ def get_login_context(request):
                 form.add_error('password', 'Invalid username or password.')
     else:
         form = LoginForm()
-    context = get_base_context()
+    context = get_non_base_context(request)
     context['form'] = form
     return context
 
@@ -107,7 +169,7 @@ def get_signup_context(request):
             return reverse('index')
     else:
         form = RegisterForm()
-    context = get_base_context()
+    context = get_non_base_context(request)
     context['form'] = form
     return context
 
@@ -122,7 +184,7 @@ def get_settings_context(request):
             return 'settings'
     else:
         form = SettinsForm(instance=user, profile=profile)
-    context = get_base_context()
+    context = get_base_context(request)
     context['form'] = form
     return context
 
@@ -134,7 +196,7 @@ def get_ask_context(request):
             return question.get_absolute_url()
     else:
         form = AskForm()
-    context = get_base_context()
+    context = get_base_context(request)
     context['form'] = form
     return context
 

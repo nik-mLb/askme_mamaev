@@ -31,12 +31,13 @@ urlpatterns = [
     path('tag/<str:tag_name>', views.tag, name = 'tag'),
     path('settings/', views.settings, name = 'settings'),
     path('logout', views.logout, name='logout'),
-    path('like_question/<int:question_id>', views.like_question, name='like_question'),
+    path('like_question/<int:question_id>/', views.like_question, name='like_question'),
     path('like_question_async/<int:question_id>', views.like_question_async, name='like_question_async'),
     path('like_answer_async/<int:question_id>/<int:answer_id>', views.like_answer_async, name='like_answer_async'),
-    path('set_correct_answer/<int:question_id>/<int:answer_id>', views.set_correct_answer, name='set_correct_answer')
+    path('set_correct_answer/<int:question_id>/<int:answer_id>', views.set_correct_answer, name='set_correct_answer'),
+    path('search-questions/', views.search_questions, name='search_questions'),
 ]
 
-# if settings.DEBUG:
-#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-#     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) 
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) 

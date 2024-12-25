@@ -1,14 +1,20 @@
+from datetime import timedelta
+from django.utils import timezone
 from django.db import models
 from django.db.models import Count, Case, When, IntegerField
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.db.models import Q
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVectorField
 
 class ProfileManager(models.Manager):
     def get_popular_users(self):
+        one_week_ago = timezone.now() - timedelta(days=7)
         return self.annotate(
-            question_count=Count('author_question'),
-            answer_count=Count('author_answer') 
-        ).order_by('-question_count', '-answer_count')[:5]
+            question_count=Count('author_question', filter=Q(author_question__created_at__gte=one_week_ago)),
+            answer_count=Count('author_answer', filter=Q(author_answer__created_at__gte=one_week_ago))
+        ).order_by('-question_count', '-answer_count')[:10]
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
@@ -21,7 +27,11 @@ class Profile(models.Model):
 
 class TagManager(models.Manager):
     def get_popular(self):
-        return self.annotate(num_questions=Count('tags_question')).order_by('-num_questions')[:9]
+        # Фильтруем вопросы за последние 3 месяца
+        three_months_ago = timezone.now() - timedelta(days=90)
+        return self.filter(tags_question__created_at__gte=three_months_ago).annotate(
+            num_questions=Count('tags_question')
+        ).order_by('-num_questions')[:10]
     
 class Tag(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -78,6 +88,13 @@ class Question(models.Model):
 
     def __str__(self):
         return self.title
+    
+    search_vector = SearchVectorField(null=True, blank=True)
+
+    class Meta:
+        indexes = [
+            GinIndex(fields=['search_vector']),
+        ]
 
 
 class Answer(models.Model):

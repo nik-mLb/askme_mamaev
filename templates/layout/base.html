@@ -17,11 +17,16 @@
                 <a class="navbar-brand" href="{% url 'index' %}">AskPupkin</a>
 
                 {% if request.user.is_authenticated %}
-                <form class="d-flex" role="search">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
-                    <button class="btn btn-outline-success" type="submit"><a class="text-reset text-decoration-none"
-                        href="{% url 'ask' %}">ASK!</a></button>
-                </form>
+                <div class="d-flex align-items-center">
+                    <form class="d-flex me-2" role="search" action="{% url 'search_questions' %}" method="GET">
+                        <input id="search-input" class="form-control" type="search" placeholder="Search" aria-label="Search" />
+                    </form> 
+                    <a class="btn btn-outline-success" href="{% url 'ask' %}">ASK!</a>
+                </div>
+                <div id="search-results" class="dropdown-menu" style="display: none;">
+                    <!-- Результаты будут добавляться сюда через JavaScript -->
+                </div>
+                        
 
                 <div class="d-flex align-items-center gap-3">
                     {% if request.user.profile.avatar %}
@@ -58,9 +63,10 @@
 
         <div class="row">
 
-            {% block content %}
-
-            {% endblock %}
+            <div class="col-9">
+                {% block content %}
+                {% endblock %}
+            </div>
             <div class="col-3 ms-auto">
                 <section>
                     <h2 class="border-bottom pb-2">Popular Tags</h2>
@@ -92,3 +98,50 @@
 </body>
 
 </html>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+    
+        let timeout = null;
+    
+        searchInput.addEventListener('input', function() {
+            clearTimeout(timeout);
+    
+            timeout = setTimeout(() => {
+                const query = searchInput.value.trim();
+                if (query.length > 2) {  // Отправляем запрос только если введено более 2 символов
+                    fetch(`/search-questions/?q=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            searchResults.innerHTML = '';
+                            searchResults.style.display = 'block';
+                            if (data.results.length > 0) {
+                                data.results.forEach(result => {
+                                    const link = document.createElement('a');
+                                    link.href = result.get_absolute_url;
+                                    link.textContent = result.headline_title;
+                                    link.classList.add('dropdown-item');
+                                    searchResults.appendChild(link);
+    
+                                    const paragraph = document.createElement('p');
+                                    paragraph.textContent = result.headline_body;
+                                    paragraph.classList.add('dropdown-item');
+                                    searchResults.appendChild(paragraph);
+                                });
+                            } else {
+                                const noResults = document.createElement('div');
+                                noResults.textContent = 'No results found.';
+                                noResults.classList.add('dropdown-item');
+                                searchResults.appendChild(noResults);
+                            }
+                        });
+                } else {
+                    searchResults.style.display = 'none';
+                    searchResults.innerHTML = '';
+                }
+            }, 300);  // Задержка в 300 мс перед отправкой запроса
+        });
+    });
+</script>

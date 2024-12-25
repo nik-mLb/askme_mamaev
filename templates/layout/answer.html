@@ -8,9 +8,9 @@
             <div class="col-3">
                 <div class="border mb-2">
                     {% if answer_like.answer.author.avatar %}
-                    <img class="img-fluid rounded" src="{{ answer_like.answer.author.avatar.url }}" alt="Avatar" />
+                    <img class="img-fluid rounded avatar" src="{{ answer_like.answer.author.avatar.url }}" alt="Avatar" />
                     {% else %}
-                    <img class="img-fluid rounded" src="{% static 'img/base_avatar.jpg' %}" alt="Default Avatar" />
+                    <img class="img-fluid rounded avatar" src="{% static 'img/base_avatar.jpg' %}" alt="Default Avatar" />
                     {% endif %}
                 </div>
                 <input class="form-control answer-like-counter" type="number"
@@ -23,14 +23,14 @@
                 {% endif %}
             </div>
             <div class="col-9">
-                <h4>Answer from {{ answer_like.answer.author.user.username }}:</h4>
-                <p class="card-text">{{ answer_like.answer.body }}</p>
+                <h4 class = "username">Answer from {{ answer_like.answer.author.user.username }}:</h4>
+                <p class="card-text content">{{ answer_like.answer.body }}</p>
                 <div class="d-flex gap-5">
                     <div class="form-check">
                         {% if request.user.is_authenticated and answer_like.answer.question.author == request.user.profile %}
                             <div class="mt-3 text-center" 
                                 style=" position: absolute;bottom: 20px; padding: 5px 10px;">
-                                <input class="form-check-input correct" type="checkbox" value="" 
+                                <input class="form-check-input correct" type="checkbox" value="false" 
                                     {% if answer_like.answer.is_correct %}checked{% endif %}>
                                 <label class="form-check-label">
                                     Correct!
@@ -39,7 +39,7 @@
                         {% endif %}
 
                         {% if answer_like.answer.question.author != request.user.profile and answer_like.answer.is_correct %}
-                            <div class="alert alert-success alert-sm mt-3 text-center" 
+                            <div class="alert alert-success alert-sm mt-3 text-center correct-tr" 
                                 style=" position: absolute;bottom: 10px; padding: 5px 10px;" role="alert">
                                 It is correct answer!
                             </div>

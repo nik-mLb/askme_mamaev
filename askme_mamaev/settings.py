@@ -122,13 +122,13 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
-# if DEBUG:
-#     STATICFILES_DIRS = [
-#         BASE_DIR / "static",
-#     ]
+if DEBUG:
+    STATICFILES_DIRS = [
+        BASE_DIR / "static",
+    ]
 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'static'
+# STATIC_ROOT = BASE_DIR / 'static'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -139,3 +139,16 @@ LOGIN_URL = '/login/'
 
 MEDIA_URL = '/uploads/'
 MEDIA_ROOT = BASE_DIR / 'uploads'
+
+CENTRIFUGO_SECRET_KEY = "my_secret"
+CENTRIFUGO_WS_URL = "ws://localhost:8010/connection/websocket"
+
+CENTRIFUGO_API_URL = "http://localhost:8010/api"
+CENTRIFUGO_API_KEY = "my_api_key"
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
+}

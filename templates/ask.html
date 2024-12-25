@@ -5,7 +5,7 @@
 <div class="d-flex gap-3 align-items-center">
     <h1>New Questions</h1>
 </div>
-<div class="col-9 mt-4">
+<div class="mt-4">
     <form action="{% url 'ask' %}" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="row mb-3">

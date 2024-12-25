@@ -96,12 +96,20 @@ class AskForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         title = cleaned_data.get("title")
+        tags = cleaned_data.get("tags")
 
         if title:
             if Question.objects.filter(title = title.strip()).exclude(pk=self.instance.pk).exists():
                 self.add_error('title', "This title is already in use.")
             if len(title) < 3:
                 self.add_error('title', "Too short title (min 3)")
+
+        if tags:
+            tag_list = [tag.strip() for tag in tags.split()]
+            if len(tag_list) > 3:
+                self.add_error('tags', "You can only add up to 3 tags.")
+        
+        return cleaned_data
 
     def save(self, commit=True, author=None):
         question = super().save(commit=False)
